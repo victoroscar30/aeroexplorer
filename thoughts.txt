@@ -1,0 +1,7 @@
+baro_altitude e geo_altitude podem ter valores negativos pequenos → considerar arredondar para 0.
+
+vertical_rate tem valores fora da realidade (ex: -165 m/s) → descartar ou capar num range físico aceitável (ex: -30 a +30 m/s).
+
+velocity acima de ~320 m/s é raro → avaliar se descarta ou marca como anômalo.
+
+df_final.drop(['category', 'sensors'], axis=1, inplace=True) # considering droping squawk too

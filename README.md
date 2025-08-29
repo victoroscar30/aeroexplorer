@@ -90,16 +90,6 @@ architecture-beta
     disk2:T -- B:db
 ```
 --->
-<!---
-stateDiagram
-    direction LR
-    Input --> Blackbox
-    Blackbox --> Output
-    state Blackbox {
-      direction LR
-      🪄 
-    }
---->
 
 #### Future Extensions
 

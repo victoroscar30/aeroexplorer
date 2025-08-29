@@ -45,19 +45,7 @@ Example: `flights_20250828`
 | Monthly / Yearly Tables    | Fewer tables to manage                                               | Querying a single day scans millions of rows; archival less granular                  |
 | **Daily Tables (Chosen)**      | Optimized for performance, simplicity, and maintainability; matches natural temporal distribution | More tables to manage; requires UNION for multi-day queries |
 
-##### Future Extensions
-
-Although SQLite does not support advanced partitioning features, the following ideas could apply in more robust database engines:
-
-Automated Table Creation: Scheduled jobs can create the next day’s table in advance.
-
-Historical Aggregation: Older tables could be summarized into monthly or yearly aggregated tables for faster historical queries.
-
-Hybrid Strategy Concept: High-granularity daily tables for recent data combined with aggregated historical tables for analytics.
->[!NOTE]
->Note: In SQLite, queries still need to manually reference the tables of interest. Concepts like partition pruning are included here only for conceptual completeness.
-
-### Entity-Relationship Diagram (ERD)
+##### Entity-Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
@@ -86,6 +74,17 @@ erDiagram
     COUNTRIES ||--o{ FLIGHTS_YYYYMMDD : "destined to"
 
 ```
+##### Future Extensions
+
+Although SQLite does not support advanced partitioning features, the following ideas could apply in more robust database engines:
+
+* **Automated Table Creation:** Scheduled jobs can create the next day’s table in advance.
+
+*  **Historical Aggregation:** Older tables could be summarized into monthly or yearly aggregated tables for faster historical queries.
+
+* **Hybrid Strategy Concept:** High-granularity daily tables for recent data combined with aggregated historical tables for analytics.
+>[!NOTE]
+>In SQLite, queries still need to manually reference the tables of interest. Concepts like partition pruning are included here only for conceptual completeness.
 
 ## Acknowledgements
 

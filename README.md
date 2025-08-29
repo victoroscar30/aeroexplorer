@@ -89,8 +89,18 @@ architecture-beta
     disk1:T -- B:server
     disk2:T -- B:db
 ```
-
 --->
+<!---
+stateDiagram
+    direction LR
+    Input --> Blackbox
+    Blackbox --> Output
+    state Blackbox {
+      direction LR
+      🪄 
+    }
+--->
+
 #### Future Extensions
 
 Although SQLite does not support advanced partitioning features, the following ideas could apply in more robust database engines:

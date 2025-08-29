@@ -57,14 +57,36 @@ Historical Aggregation: Older tables could be summarized into monthly or yearly 
 Hybrid Strategy Concept: High-granularity daily tables for recent data combined with aggregated historical tables for analytics.
 
 Note: In SQLite, queries still need to manually reference the tables of interest. Concepts like partition pruning are included here only for conceptual completeness.
-```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
-```
 
+### Entity-Relationship Diagram (ERD)
+
+```mermaid
+erDiagram
+    AIRSHIPS {
+        INT airship_id PK
+        STRING name
+        STRING model
+    }
+    COUNTRIES {
+        INT country_id PK
+        STRING name
+        STRING code
+    }
+    FLIGHTS_YYYYMMDD {
+        INT flight_id PK
+        INT airship_id FK
+        INT origin_country_id FK
+        INT destination_country_id FK
+        DATETIME departure_time
+        DATETIME arrival_time
+        STRING status
+    }
+
+    AIRSHIPS ||--o{ FLIGHTS_YYYYMMDD : "performs"
+    COUNTRIES ||--o{ FLIGHTS_YYYYMMDD : "originates from"
+    COUNTRIES ||--o{ FLIGHTS_YYYYMMDD : "destined to"
+
+```
 
 ## Acknowledgements
 

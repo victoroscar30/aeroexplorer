@@ -1,52 +1,51 @@
-Database Modeling Decisions
+#### Database Modeling Decisions
 
-A critical aspect of this project is how flight data is stored, accessed, and maintained over time. Instead of relying on a single, ever-growing monolithic table, we adopted a daily table strategy to optimize performance, maintainability, and query simplicity.
+A critical aspect of this project is how flight data is stored, accessed, and maintained over time. Instead of relying on a single, ever-growing monolithic table, **we adopted a daily table strategy** to optimize performance, maintainability, and query simplicity.
 
 Table Structure
 
-Flight records are stored in daily tables following the naming pattern:
-
+* Flight records are stored in daily tables following the naming pattern:
+```console
 flights_YYYYMMDD
+```
+Example: `flights_20250828`
 
+* Reference tables such as planes, countries, and other static entities remain non-partitioned, as their size and update frequency are much smaller compared to flight records.
 
-Example:
+##### Why Daily Tables?
+**1. Performance**
 
-flights_20250828
+* **Data Growth:** Flight data increases rapidly, with thousands or millions of new entries each day.
 
+* **Query Efficiency:** By targeting only the relevant daily tables, queries scan significantly less data than a monolithic table.
 
-Reference tables such as airships, countries, and other static entities remain non-partitioned, as their size and update frequency are much smaller compared to flight records.
+* **Faster Responses:** Most operational and analytical queries focus on a narrow time window (e.g., the last 24–48 hours), making daily tables ideal.
 
-Why Daily Tables?
-1. Performance
+**2. Query Simplicity**
 
-Data Growth: Flight data increases rapidly, with thousands or millions of new entries each day.
+* **Flight Duration:** Most flights last less than 24 hours.
 
-Query Efficiency: By targeting only the relevant daily tables, queries scan significantly less data than a monolithic table.
+* **Completeness:** Queries spanning 1–2 days (e.g., a UNION of consecutive daily tables) capture entire flights without missing data.
 
-Faster Responses: Most operational and analytical queries focus on a narrow time window (e.g., the last 24–48 hours), making daily tables ideal.
+* **Ease of Use:** Developers avoid complex filtering logic; just include the tables for the dates needed.
 
-2. Query Simplicity
+**3. Maintainability**
 
-Flight Duration: Most flights last less than 24 hours.
+* **Archival:** Old tables can be moved to cheaper storage without affecting current operations.
 
-Completeness: Queries spanning 1–2 days (e.g., a UNION of consecutive daily tables) capture entire flights without missing data.
+* **Backup & Restore:** Daily granularity simplifies backup strategies — only recent tables need frequent backups.
 
-Ease of Use: Developers avoid complex filtering logic; just include the tables for the dates needed.
+* **Data Lifecycle Management:** Dropping outdated tables (e.g., older than 2 years) is straightforward and non-disruptive.
 
-3. Maintainability
+##### Trade-offs Considered
 
-Archival: Old tables can be moved to cheaper storage without affecting current operations.
+| Strategy                  | Pros                                                                 | Cons                                                                                   |
+|----------------------------|----------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| Single Monolithic Table    | Easy initial setup                                                   | Queries degrade as dataset grows; indexing becomes costly                              |
+| Monthly / Yearly Tables    | Fewer tables to manage                                               | Querying a single day scans millions of rows; archival less granular                  |
+| **Daily Tables (Chosen)**      | Optimized for performance, simplicity, and maintainability; matches natural temporal distribution | More tables to manage; requires UNION for multi-day queries |
 
-Backup & Restore: Daily granularity simplifies backup strategies — only recent tables need frequent backups.
-
-Data Lifecycle Management: Dropping outdated tables (e.g., older than 2 years) is straightforward and non-disruptive.
-
-Trade-offs Considered
-Strategy	Pros	Cons
-Single Monolithic Table	Easy initial setup	Queries degrade as dataset grows; indexing becomes costly
-Monthly / Yearly Tables	Fewer tables to manage	Querying a single day scans millions of rows; archival less granular
-Daily Tables (Chosen)	Optimized for performance, simplicity, and maintainability; matches natural temporal distribution	More tables to manage; requires UNION for multi-day queries
-Future Extensions
+##### Future Extensions
 
 Although SQLite does not support advanced partitioning features, the following ideas could apply in more robust database engines:
 
@@ -55,15 +54,15 @@ Automated Table Creation: Scheduled jobs can create the next day’s table in ad
 Historical Aggregation: Older tables could be summarized into monthly or yearly aggregated tables for faster historical queries.
 
 Hybrid Strategy Concept: High-granularity daily tables for recent data combined with aggregated historical tables for analytics.
-
-Note: In SQLite, queries still need to manually reference the tables of interest. Concepts like partition pruning are included here only for conceptual completeness.
+>[!NOTE]
+>Note: In SQLite, queries still need to manually reference the tables of interest. Concepts like partition pruning are included here only for conceptual completeness.
 
 ### Entity-Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
-    AIRSHIPS {
-        INT airship_id PK
+    PLANES {
+        INT plane_id PK
         STRING name
         STRING model
     }
@@ -74,7 +73,7 @@ erDiagram
     }
     FLIGHTS_YYYYMMDD {
         INT flight_id PK
-        INT airship_id FK
+        INT plane_id FK
         INT origin_country_id FK
         INT destination_country_id FK
         DATETIME departure_time
@@ -82,7 +81,7 @@ erDiagram
         STRING status
     }
 
-    AIRSHIPS ||--o{ FLIGHTS_YYYYMMDD : "performs"
+    PLANES ||--o{ FLIGHTS_YYYYMMDD : "performs"
     COUNTRIES ||--o{ FLIGHTS_YYYYMMDD : "originates from"
     COUNTRIES ||--o{ FLIGHTS_YYYYMMDD : "destined to"
 

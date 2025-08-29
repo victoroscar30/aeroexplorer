@@ -51,27 +51,34 @@ Example: `flights_20250828`
 erDiagram
     PLANES {
         INT plane_id PK
-        STRING name
-        STRING model
+        STRING icao24
     }
     COUNTRIES {
         INT country_id PK
         STRING name
-        STRING code
     }
+
     FLIGHTS_YYYYMMDD {
         INT flight_id PK
         INT plane_id FK
-        INT origin_country_id FK
-        INT destination_country_id FK
-        DATETIME departure_time
-        DATETIME arrival_time
-        STRING status
+        STRING callsign
+        BIGINT time_position
+        BIGINT last_contact
+        NUMERIC longitude
+        NUMERIC latitude
+        NUMERIC baro_altitude
+        NUMERIC geo_altitude
+        BOOLEAN on_ground
+        NUMERIC velocity
+        NUMERIC heading
+        NUMERIC vertical_rate
+        VARCHAR sensors
+        VARCHAR squawk
+        BOOLEAN spi
+        SMALLINT position_source
     }
-
     PLANES ||--o{ FLIGHTS_YYYYMMDD : "performs"
-    COUNTRIES ||--o{ FLIGHTS_YYYYMMDD : "originates from"
-    COUNTRIES ||--o{ FLIGHTS_YYYYMMDD : "destined to"
+    COUNTRIES ||--o{ PLANES : "originates from"
 
 ```
 <!---

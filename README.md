@@ -86,6 +86,21 @@ Although SQLite does not support advanced partitioning features, the following i
 >[!NOTE]
 >In SQLite, queries still need to manually reference the tables of interest. Concepts like partition pruning are included here only for conceptual completeness.
 
+#### Example Queries
+
+**Query flights for a single day:**
+```sql
+SELECT * 
+  FROM flights_20250828;
+```
+**Query flights across two days:**
+
+```sql
+SELECT * FROM flights_20250828
+UNION ALL
+SELECT * FROM flights_20250829;
+```
+
 ## Acknowledgements
 
 This project uses data from the OpenSky Network. We thank the OpenSky team for providing access to their ADS-B sensor network.

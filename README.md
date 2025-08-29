@@ -1,8 +1,8 @@
-#### Database Modeling Decisions
+### Database Modeling Decisions
 
 A critical aspect of this project is how flight data is stored, accessed, and maintained over time. Instead of relying on a single, ever-growing monolithic table, **we adopted a daily table strategy** to optimize performance, maintainability, and query simplicity.
 
-Table Structure
+**Table Structure**
 
 * Flight records are stored in daily tables following the naming pattern:
 ```console
@@ -12,7 +12,7 @@ Example: `flights_20250828`
 
 * Reference tables such as planes, countries, and other static entities remain non-partitioned, as their size and update frequency are much smaller compared to flight records.
 
-##### Why Daily Tables?
+#### Why Daily Tables?
 **1. Performance**
 
 * **Data Growth:** Flight data increases rapidly, with thousands or millions of new entries each day.
@@ -37,7 +37,7 @@ Example: `flights_20250828`
 
 * **Data Lifecycle Management:** Dropping outdated tables (e.g., older than 2 years) is straightforward and non-disruptive.
 
-##### Trade-offs Considered
+#### Trade-offs Considered
 
 | Strategy                  | Pros                                                                 | Cons                                                                                   |
 |----------------------------|----------------------------------------------------------------------|---------------------------------------------------------------------------------------|
@@ -45,7 +45,7 @@ Example: `flights_20250828`
 | Monthly / Yearly Tables    | Fewer tables to manage                                               | Querying a single day scans millions of rows; archival less granular                  |
 | **Daily Tables (Chosen)**      | Optimized for performance, simplicity, and maintainability; matches natural temporal distribution | More tables to manage; requires UNION for multi-day queries |
 
-##### Entity-Relationship Diagram (ERD)
+#### Entity-Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
@@ -74,7 +74,7 @@ erDiagram
     COUNTRIES ||--o{ FLIGHTS_YYYYMMDD : "destined to"
 
 ```
-##### Future Extensions
+#### Future Extensions
 
 Although SQLite does not support advanced partitioning features, the following ideas could apply in more robust database engines:
 

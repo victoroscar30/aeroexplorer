@@ -6,11 +6,11 @@ A critical aspect of this project is how flight data is stored, accessed, and ma
 
 * Flight records are stored in daily tables following the naming pattern:
 ```console
-flights_YYYYMMDD
+FLIGHTS_YYYYMMDD
 ```
-Example: `flights_20250828`
+Example: `FLIGHTS_20250828`
 
-* Reference tables such as planes, countries, and other static entities remain non-partitioned, as their size and update frequency are much smaller compared to flight records.
+* Reference tables such as `PLANES`, `COUNTRIES`, and other static entities remain non-partitioned, as their size and update frequency are much smaller compared to flight records.
 
 #### Why Daily Tables?
 **1. Performance**

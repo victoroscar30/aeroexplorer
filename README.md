@@ -55,7 +55,7 @@ The analysis examines the geographical spread of flight data. A bar chart of `or
     * **Method:** Scatter plots of `baro_altitude` vs `velocity` and `vertical_rate` vs `baro_altitude`; histograms of `vertical_rate`.
     * **Takeaway**: Visualizations reveal normal flight profiles, highlight outliers, and provide context for further analysis or model validation.
 
-**Key Takeouts and Insights**
+#### Key Takeouts and Insights
 
 * **Altitude:** Small negative values in baro_altitude and geo_altitude are physically impossible and should be rounded to 0.
 

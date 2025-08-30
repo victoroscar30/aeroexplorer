@@ -1,17 +1,18 @@
 import pandas as pd
 
-def transform_data(raw_data):
-    cols = [
-        "icao24", "callsign", "origin_country", "time_position", 
-        "last_contact", "longitude", "latitude", "baro_altitude", 
-        "on_ground", "velocity", "heading", "vertical_rate"
-    ]
+def transform_flights(df: pd.DataFrame) -> pd.DataFrame:
+    df['baro_altitude'] = df['baro_altitude'].apply(lambda x: max(x, 0) if pd.notnull(x) else x)
+    df['geo_altitude'] = df['geo_altitude'].apply(lambda x: max(x, 0) if pd.notnull(x) else x)
 
-    df = pd.DataFrame(raw_data["states"], columns=cols)
-    
-    # Limpeza
-    df["callsign"] = df["callsign"].str.strip()
-    df["time_position"] = pd.to_datetime(df["time_position"], unit="s", errors="coerce")
-    df["last_contact"] = pd.to_datetime(df["last_contact"], unit="s", errors="coerce")
+    df['vertical_rate'] = df['vertical_rate'].apply(lambda x: x if pd.notnull(x) and -30 <= x <= 30 else None)
+
+    df['velocity_anomaly'] = df['velocity'].apply(lambda x: True if pd.notnull(x) and x > 320 else False)
+    #df['velocity'] = df['velocity'].apply(lambda x: x if pd.notnull(x) and x <= 320 else None)
+
+    df.drop(['category', 'sensors','squawk'], axis=1, inplace=True)
+
+    df['time'] = pd.to_datetime(df['time'], unit='s', errors='coerce')
+    df['time_position'] = pd.to_datetime(df['time_position'], unit='s', errors='coerce')
+    df['last_contact'] = pd.to_datetime(df['last_contact'], unit='s', errors='coerce')
     
     return df

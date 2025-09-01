@@ -69,13 +69,14 @@ This data cleaning and quality assessment ensures the dataset is reliable and co
 
 ___
 ### Pipeline
+This data engineering pipeline is designed to extract, transform, and load flight data from the OpenSky Network API. It automates the process of collecting raw data, applying cleaning and transformation rules, and then storing the processed data in a CSV file. The pipeline's modular structure makes it easy to maintain and extend for future stages, such as storing data in a database or scheduling its execution.
 
 ___
 ### Database Modeling Decisions
 
 A critical aspect of this project is how flight data is stored, accessed, and maintained over time. Instead of relying on a single, ever-growing monolithic table, **we adopted a daily table strategy** to optimize performance, maintainability, and query simplicity.
 
-**Table Structure**
+#### Table Structure
 
 * Flight records are stored in daily tables following the naming pattern:
 ```console

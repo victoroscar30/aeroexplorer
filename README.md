@@ -68,8 +68,18 @@ The analysis examines the geographical spread of flight data. A bar chart of `or
 This data cleaning and quality assessment ensures the dataset is reliable and consistent. Handling missing values, converting timestamps, and addressing outliers in altitude, vertical rate, and velocity provide a strong foundation for accurate analysis and future pipeline automation. These steps not only improve the accuracy of subsequent analyses but also guide the design of the **data pipeline**, enabling more efficient, automated handling of incoming flight data.
 
 ___
-### Pipeline
+### Pipeline - `pipeline.py`
 This data engineering pipeline is designed to extract, transform, and load flight data from the OpenSky Network API. It automates the process of collecting raw data, applying cleaning and transformation rules, and then storing the processed data in a CSV file. The pipeline's modular structure makes it easy to maintain and extend for future stages, such as storing data in a database or scheduling its execution.
+
+#### Pipeline Flow
+The pipeline follows a simple **Extract-Transform-Load (ETL)** approach, where each stage is encapsulated in a separate Python module to ensure a separation of responsibilities.
+
+```mermaid
+graph TD
+    A[fetch_data.py] --> B[transform.py];
+    B --> C[load.py];
+    C --> D[data/processed/opensky_data_YYYYMMDD_HHMMSS.csv];
+```
 
 ___
 ### Database Modeling Decisions

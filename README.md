@@ -69,17 +69,33 @@ This data cleaning and quality assessment ensures the dataset is reliable and co
 
 ___
 ### Pipeline - `pipeline.py`
-This data engineering pipeline is designed to extract, transform, and load flight data from the OpenSky Network API. It automates the process of collecting raw data, applying cleaning and transformation rules, and then storing the processed data in a CSV file. The pipeline's modular structure makes it easy to maintain and extend for future stages, such as storing data in a database or scheduling its execution.
+This data engineering pipeline is designed to extract, transform, and load flight data from the OpenSky Network API. It automates the process of collecting raw data, applying cleaning and transformation rules, and then storing the processed data in a MongoDB collection. The pipeline's modular structure makes it easy to maintain and extend for future stages.
 
 #### Pipeline Flow
-The pipeline follows a simple **Extract-Transform-Load (ETL)** approach, where each stage is encapsulated in a separate Python module to ensure a separation of responsibilities.
+The pipeline follows a simple **Extract-Transform-Load (ETL)** approach, where each stage is encapsulated in a separate Python module to ensure a separation of responsibilities, orchestrated by the main script `pipeline.py`.
+##### Pipeline Diagram
 
 ```mermaid
 graph TD
-    A[fetch_data.py] --> B[transform.py];
-    B --> C[load.py];
-    C --> D[data/processed/opensky_data_YYYYMMDD_HHMMSS.csv];
+    subgraph Orquestração
+        A[pipeline.py] --> B(Orchestration & Scheduling);
+    end
+
+    subgraph Pipeline
+        B --> C[fetch_data.py];
+        C --> D[transform.py];
+        D --> E[load.py];
+    end
+
+    subgraph Dependências
+        G[auth_opensky.py] --> C;
+    end
+    
+    E --> F{Database or File};
+    F --> I(MongoDB);
+    F --> H(CSV);
 ```
+
 
 ___
 ### Database Modeling Decisions

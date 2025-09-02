@@ -15,4 +15,13 @@ def transform_flights(df: pd.DataFrame) -> pd.DataFrame:
     df['time_position'] = pd.to_datetime(df['time_position'], unit='s', errors='coerce')
     df['last_contact'] = pd.to_datetime(df['last_contact'], unit='s', errors='coerce')
     
+    for col in ['time', 'time_position', 'last_contact']:
+        df[col] = df[col].apply(lambda x: x.to_pydatetime() if pd.notnull(x) else None)
+
+    #for col in ['time', 'time_position', 'last_contact']:
+    #    df[col] = df[col].apply(lambda x: x.to_pydatetime() if x is not None else None)
+    #for col in df.select_dtypes(include=['datetime64[ns]']):
+    #    df[col] = df[col].where(pd.notnull(df[col]), None)
+    #    df[col].fillna("-",inplace=True)
+    
     return df

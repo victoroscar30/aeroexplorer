@@ -62,3 +62,4 @@ ENV/
 
 # My specific: ignore data folders if you want
 data/
+thoughts.txt

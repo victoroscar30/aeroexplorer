@@ -131,136 +131,109 @@ Credentials for OpenSky Network API access are stored in a `.env` file at the pr
 >The token URL is provided by OpenSky and must be configured in this variable.
 
 MongoDB credentials, such as `mongo_uri`, `db_name`, and `collection_name`, are configured with default values directly in the `load_to_mongo()` function.
-___
-### Database Modeling Decisions
 
-A critical aspect of this project is how flight data is stored, accessed, and maintained over time. Instead of relying on a single, ever-growing monolithic table, **we adopted a daily table strategy** to optimize performance, maintainability, and query simplicity.
+##### Data and Schemas
 
-#### Table Structure
+**Data Source:** OpenSky Network flight states API `/api/states/all`
 
-* Flight records are stored in daily tables following the naming pattern:
-```console
-FLIGHTS_YYYYMMDD
-```
-Example: `FLIGHTS_20250828`
+**Input Format:** JSON with a nested list of flight states.  
 
-* Reference tables such as `PLANES`, `COUNTRIES`, and other static entities remain non-partitioned, as their size and update frequency are much smaller compared to flight records.
+**Output Format:**
+- **CSV:** Files with the `opensky_data_` prefix and a timestamp suffix (`YYYYMMDD_HHMMSS`) saved in `data/processed/`.
+- **MongoDB:** Documents inserted into the `air_traffic` collection of the `flightdeck` database.
 
-#### Why Daily Tables?
-**1. Performance**
+##### Data Schema (after transformation)
 
-* **Data Growth:** Flight data increases rapidly, with thousands or millions of new entries each day.
+| Field            | Data Type | Notes                                                       |
+|------------------|-----------|-------------------------------------------------------------|
+| time             | datetime  | Timestamp of the API response.                              |
+| icao24           | str       | Unique aircraft identifier.                                 |
+| callsign         | str       | Call sign (stripped of whitespace).                         |
+| origin_country   | str       | Country of origin.                                          |
+| time_position    | datetime  | Last position timestamp.                                    |
+| last_contact     | datetime  | Last known contact.                                         |
+| longitude        | float     | Geographical position.                                      |
+| latitude         | float     | Geographical position.                                      |
+| baro_altitude    | float     | Barometric altitude (no negative values).                   |
+| on_ground        | bool      | True if the aircraft is on the ground.                      |
+| velocity         | float     | Velocity.                                                   |
+| true_track       | float     | True flight direction.                                      |
+| vertical_rate    | float     | Rate of ascent/descent (capped between -30 and +30).        |
+| geo_altitude     | float     | Geometric altitude (no negative values).                    |
+| position_source  | int       | Position source.                                            |
+| velocity_anomaly | bool      | True if the velocity is greater than 320 m/s.               |
 
-* **Query Efficiency:** By targeting only the relevant daily tables, queries scan significantly less data than a monolithic table.
+**Removed Columns:** `category`, `sensors`, and `squawk` are dropped in the transformation step due to a lack of usable data.
 
-* **Faster Responses:** Most operational and analytical queries focus on a narrow time window (e.g., the last 24–48 hours), making daily tables ideal.
+##### Quality, Validation, and Logs
 
-**2. Query Simplicity**
+- **Validation Rules:**
+  - Negative altitudes (`baro_altitude`, `geo_altitude`) are adjusted to `0`.
+  - `vertical_rate` is capped between **-30** and **+30 m/s**.
+  - Velocities above **320 m/s** are flagged as anomalies.
 
-* **Flight Duration:** Most flights last less than 24 hours.
+- **Logs:** Console messages track progress, including:
+  - Token generation (`auth_opensky.py`).
+  - Number of saved records (`pipeline.py`).
+  - Load errors (`load.py`).
 
-* **Completeness:** Queries spanning 1–2 days (e.g., a UNION of consecutive daily tables) capture entire flights without missing data.
+- **Error Handling:**
+  - **Extraction:** `fetch_data.py` uses `resp.raise_for_status()` for HTTP errors (401, 404, etc.).
+  - **Loading:** `load_to_mongo()` uses `try...except BulkWriteError` with `ordered=False` to continue inserting even if some documents fail.
 
-* **Ease of Use:** Developers avoid complex filtering logic; just include the tables for the dates needed.
+##### Performance and Scalability
 
-**3. Maintainability**
+- **Batch Processing:** Processes data in DataFrames, inserting multiple docs into MongoDB via `insert_many()`.  
+- **Token Management:** Cached and proactively renewed 60s before expiration.  
+- **Limitations:** Current scheduling (`schedule`) is lightweight and lacks retries, fault tolerance, or DAG visualization (better suited for Airflow, Prefect, or Dagster).
 
-* **Archival:** Old tables can be moved to cheaper storage without affecting current operations.
+##### Testing and Reproducibility
 
-* **Backup & Restore:** Daily granularity simplifies backup strategies — only recent tables need frequent backups.
+- **Tests:** Basic via `if __name__ == "__main__"` in `fetch_data.py` and `pipeline.py`.  
+- **Dependencies:**
+  - `python-dotenv`
+  - `requests`
+  - `schedule`
+  - `pandas`
+  - `pymongo`
+- **Reproducibility:** Requires only the dependencies above and a properly configured `.env` file.
 
-* **Data Lifecycle Management:** Dropping outdated tables (e.g., older than 2 years) is straightforward and non-disruptive.
+##### End-to-End Execution
 
-#### Trade-offs Considered
+1. Create a `.env` file at the project root and configure variables:
 
-| Strategy                  | Pros                                                                 | Cons                                                                                   |
-|----------------------------|----------------------------------------------------------------------|---------------------------------------------------------------------------------------|
-| Single Monolithic Table    | Easy initial setup                                                   | Queries degrade as dataset grows; indexing becomes costly                              |
-| Monthly / Yearly Tables    | Fewer tables to manage                                               | Querying a single day scans millions of rows; archival less granular                  |
-| **Daily Tables (Chosen)**      | Optimized for performance, simplicity, and maintainability; matches natural temporal distribution | More tables to manage; requires UNION for multi-day queries |
+   ```ini
+   OPENSKY_USERNAME="your_username"
+   OPENSKY_PASSWORD="your_password"
+   TOKEN_URL="https://opensky-network.org/api/token"
+   ```
+2. Run the pipeline from the terminal:
 
-#### Entity-Relationship Diagram (ERD)
+    ```python
+    python pipeline.py
+    ```
 
-```mermaid
-erDiagram
-    PLANES {
-        INT plane_id PK
-        STRING icao24
-    }
-    COUNTRIES {
-        INT country_id PK
-        STRING name
-    }
+3. To stop execution, use Ctrl+C.
 
-    FLIGHTS_YYYYMMDD {
-        INT flight_id PK
-        INT plane_id FK
-        STRING callsign
-        BIGINT time_position
-        BIGINT last_contact
-        NUMERIC longitude
-        NUMERIC latitude
-        NUMERIC baro_altitude
-        NUMERIC geo_altitude
-        BOOLEAN on_ground
-        NUMERIC velocity
-        NUMERIC heading
-        NUMERIC vertical_rate
-        VARCHAR sensors
-        VARCHAR squawk
-        BOOLEAN spi
-        SMALLINT position_source
-    }
-    PLANES ||--o{ FLIGHTS_YYYYMMDD : "performs"
-    COUNTRIES ||--o{ PLANES : "originates from"
+##### Monitoring and Metrics
 
-```
-<!---
+- **Current:** Monitoring is limited to console messages showing execution status, number of saved records, and token renewal.  
+- **Future Improvements:** Integration with robust logging (e.g., Loguru) or metrics platforms (e.g., Prometheus) could provide better observability.
 
-```mermaid
-architecture-beta
-    group api(cloud)[API]
+##### Limitations and Future Improvements
 
-    service db(database)[Database] in api
-    service disk1(disk)[Storage] in api
-    service disk2(disk)[Storage] in api
-    service server(server)[Server] in api
+- **Orchestration:** Replace `schedule` with a production-grade tool (e.g., Airflow, Prefect, Dagster).  
+- **Configuration:** Centralize settings (`mongo_uri`, `db_name`, etc.) in a dedicated file (`config.py` or `config.yaml`).  
+- **Data Ingestion:** Add schema validation (e.g., Pydantic) to ensure input data consistency.  
+- **Persistence:** Make the choice between `CSV` and `MongoDB` output configurable instead of hardcoded.  
+- **Testing:** Expand test coverage with unit tests (pytest) and integration tests for the full pipeline flow.
 
-    db:L -- R:server
-    disk1:T -- B:server
-    disk2:T -- B:db
-```
---->
-
-#### Future Extensions
-
-Although SQLite does not support advanced partitioning features, the following ideas could apply in more robust database engines:
-
-* **Automated Table Creation:** Scheduled jobs can create the next day’s table in advance.
-
-*  **Historical Aggregation:** Older tables could be summarized into monthly or yearly aggregated tables for faster historical queries.
-
-* **Hybrid Strategy Concept:** High-granularity daily tables for recent data combined with aggregated historical tables for analytics.
 >[!NOTE]
->In SQLite, queries still need to manually reference the tables of interest. Concepts like partition pruning are included here only for conceptual completeness.
-
-#### Example Queries
-
-**Query flights for a single day:**
-```sql
-SELECT * 
-  FROM flights_20250828;
-```
-**Query flights across two days:**
-
-```sql
-SELECT * FROM flights_20250828
-UNION ALL
-SELECT * FROM flights_20250829;
-```
+> Advanced monitoring, observability, and orchestration tools (e.g., Airflow, Prefect, Dagster, Prometheus) were considered during the design phase.  
+> However, since this project is intended as a **demonstration**, these technologies were **intentionally not implemented** to keep the pipeline simple and focused on core ETL concepts.  
+> They represent **natural next steps** for scaling this pipeline into a **production-ready system**.
 
 ## Acknowledgements
-
 This project uses data from the OpenSky Network. We thank the OpenSky team for providing access to their ADS-B sensor network.
 
 Reference:
@@ -269,3 +242,5 @@ Matthias Schäfer, Martin Strohmeier, Vincent Lenders, Ivan Martinovic and Matth
 In Proceedings of the 13th IEEE/ACM International Symposium on Information Processing in Sensor Networks (IPSN), pages 83-94, April 2014.
 
 Website: [https://opensky-network.org](https://opensky-network.org)
+
+_This project is not affiliated with OpenSky; it is for educational purposes only_

@@ -63,3 +63,6 @@ ENV/
 # My specific: ignore data folders if you want
 data/
 thoughts.txt
+
+# Arquivo de variáveis sensíveis
+.env

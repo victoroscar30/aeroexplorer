@@ -7,16 +7,7 @@ from load import load_to_csv,load_to_mongo
 def job():
     raw = fetch_opensky()
     df = transform_flights(raw)
-    load_to_csv(df)
-    
-    print(df[['time', 'time_position', 'last_contact']].head(10))
-    print(df[['time', 'time_position', 'last_contact']].dtypes)
-    print(df[['time', 'time_position', 'last_contact']].isna().sum())
-    print(df.dtypes)
-    print(df.isna().sum())
-
-    print(df[['time_position']].where(df['time_position'].isna()).head(10))
-
+    #load_to_csv(df)
     load_to_mongo(df)
     print(f"Pipeline executado com sucesso. {len(df)} registros salvos.")
 

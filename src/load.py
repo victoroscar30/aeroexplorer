@@ -1,12 +1,6 @@
-import sqlite3
 from pathlib import Path
 from datetime import datetime
 import pandas as pd
-
-# def load_to_db(df, db_path="data/opensky.db"):
-#     conn = sqlite3.connect(db_path)
-#     df.to_sql("flights", conn, if_exists="append", index=False)
-#     conn.close()
 
 def load_to_csv(df, folder="data/processed"):
     Path(folder).mkdir(parents=True, exist_ok=True)
@@ -39,6 +33,3 @@ def load_to_mongo(df, mongo_uri="mongodb://localhost:27017/", db_name="flightdec
         print("Errors inserting in bulk", bwe.details)
     finally:
         client.close()
-
-#def load_to_csv(df, csv_path="data/processed/opensky_data.csv"):
-#    df.to_csv(csv_path, index=False)

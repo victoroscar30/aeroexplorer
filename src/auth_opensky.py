@@ -8,9 +8,9 @@ load_dotenv()
 
 class OpenSkyAuth:
     def __init__(self):
-        self.client_id = os.getenv("OPEN_SKY_CLIENT_ID")
-        self.client_secret = os.getenv("OPEN_SKY_CLIENT_SECRET")
-        self.token_url = os.getenv("OPEN_SKY_TOKEN_URL")
+        self.client_id = os.getenv("OPENSKY_USERNAME")
+        self.client_secret = os.getenv("OPENSKY_PASSWORD")
+        self.token_url = os.getenv("TOKEN_URL")
         self.token = None
         self.expira_em = 0  # timestamp do momento em que o token expira
 

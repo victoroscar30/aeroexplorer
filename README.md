@@ -77,7 +77,7 @@ The pipeline follows a simple **Extract-Transform-Load (ETL)** approach, where e
 
 ```mermaid
 graph TD
-    subgraph Orquestração
+    subgraph Orchestration
         A[pipeline.py] --> B(Orchestration & Scheduling);
     end
 
@@ -87,7 +87,7 @@ graph TD
         D --> E[load.py];
     end
 
-    subgraph Dependências
+    subgraph Dependencies
         G[auth_opensky.py] --> C;
     end
     

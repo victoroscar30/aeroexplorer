@@ -3,8 +3,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 import pandas as pd
-from auth_opensky import OpenSkyAuth  # precisa estar no mesmo diretório ou em um pacote
-
+from auth_opensky import OpenSkyAuth
 
 # Estrutura das colunas conforme documentação da API
 COLUMN_NAMES = [
@@ -29,10 +28,10 @@ def fetch_opensky():
     data = resp.json()
 
     # Salva raw JSON (opcional, bom para auditoria e debug)
-    Path("data/raw").mkdir(parents=True, exist_ok=True)
-    filename = f"data/raw/opensky_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(filename, "w") as f:
-        json.dump(data, f)
+    #Path("data/raw").mkdir(parents=True, exist_ok=True)
+    #filename = f"data/raw/opensky_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    #with open(filename, "w") as f:
+    #    json.dump(data, f)
 
     # Normaliza os estados de voo
     flights = []

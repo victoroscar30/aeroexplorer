@@ -12,8 +12,12 @@ def job():
     print(f"Pipeline executado com sucesso. {len(df)} registros salvos.")
 
 if __name__ == "__main__":
-    #schedule.every(5).minutes.do(job)  # executa a cada 5 minutos
-    job()  # Executa imediatamente para teste
-    #while True:
-    #    schedule.run_pending()
-    #    time.sleep(1)
+    try:
+        schedule.every(30).seconds.do(job)  # executa a cada 30 segundos
+        # job()  # Executa imediatamente para teste
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n Execução interrompida pelo usuário.")
+

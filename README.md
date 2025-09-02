@@ -72,8 +72,10 @@ ___
 This data engineering pipeline is designed to extract, transform, and load flight data from the OpenSky Network API. It automates the process of collecting raw data, applying cleaning and transformation rules, and then storing the processed data in a MongoDB collection. The pipeline's modular structure makes it easy to maintain and extend for future stages.
 
 #### Pipeline Flow
-The pipeline follows a simple **Extract-Transform-Load (ETL)** approach, where each stage is encapsulated in a separate Python module to ensure a separation of responsibilities, orchestrated by the main script `pipeline.py`.
+The pipeline follows a simple **Extract-Transform-Load (ETL)** approach, where each stage is encapsulated in a separate Python module to ensure a separation of responsibilities.
+
 ##### Pipeline Diagram
+The data flow follows a clear sequence, orchestrated by the main script `pipeline.py`.
 
 ```mermaid
 graph TD
@@ -95,8 +97,40 @@ graph TD
     F --> I(MongoDB);
     F --> H(CSV);
 ```
+##### Execution Map
+1. **Orchestration:** The `pipeline.py` script is the entry point, scheduling a complete job to run every 30 seconds.
 
+2. **Extraction:** The job starts by collecting raw data (`fetch_data.py`) from the OpenSky API.
 
+3. **Transformation:** Next, the raw DataFrame is standardized, cleaned, and validated (`transform.py`).
+
+4. **Loading:** The processed data is then loaded into its final destination (`load.py`).
+
+##### Component Catalog
+
+| File/Module        | Functions/Entrypoints                           | Inputs                           | Outputs/Artifacts                       | Dependencies (int/ext)                       | How to run                   | Notes                                                                 |
+|-------------------|-----------------------------------------------|---------------------------------|---------------------------------------|---------------------------------------------|-------------------------------|----------------------------------------------------------------------|
+| `pipeline.py`      | `job()`, `if __name__ == "__main__"`          | N/A                             | Console logs                           | schedule, time, fetch_data, transform, load | `python pipeline.py`          | Main orchestrator. Scheduled to run the full pipeline every 30s. Can be stopped with Ctrl+C. |
+| `auth_opensky.py`  | `OpenSkyAuth` class, `obter_novo_token()`, `get_token()` | Credentials via environment variables (.env) | API `access_token` and `expires_in` | os, requests, time, dotenv                  | N/A (invoked internally)      | Handles authentication and token renewal for the OpenSky API.       |
+| `fetch_data.py`    | `fetch_opensky()`, `if __name__ == "__main__"` | `access_token` from API         | Pandas DataFrame (`df`) with raw flight data | requests, json, datetime, pathlib, pandas, auth_opensky | `python fetch_data.py`        | Extracts and normalizes flight data from OpenSky API. Creates initial DataFrame. |
+| `transform.py`     | `transform_flights()`                         | DataFrame from `fetch_data.py`  | Clean and formatted Pandas DataFrame  | pandas                                      | N/A (invoked internally)      | Cleans, validates, and enriches data. Handles nulls, removes unused columns, converts types. |
+| `load.py`          | `load_to_csv()`, `load_to_mongo()`           | DataFrame from `transform.py`   | CSV file (`data/processed/*.csv`) or MongoDB documents | pandas, pymongo                             | N/A (invoked internally)      | Saves processed data to CSV or MongoDB depending on the chosen method. |
+
+##### Configuration and Credentials
+Credentials for OpenSky Network API access are stored in a `.env` file at the project root. The `auth_opensky.py` module uses the `dotenv` library to load these environment variables.
+
+**Required variables in `.env:`**
+
+* `OPENSKY_USERNAME`: Username for your OpenSky account.
+
+* `OPENSKY_PASSWORD`: Password for your OpenSky account.
+
+* `TOKEN_URL`: URL of the token endpoint for authentication. 
+
+>[!IMPORTANT]
+>The token URL is provided by OpenSky and must be configured in this variable.
+
+MongoDB credentials, such as `mongo_uri`, `db_name`, and `collection_name`, are configured with default values directly in the `load_to_mongo()` function.
 ___
 ### Database Modeling Decisions
 

@@ -233,6 +233,27 @@ MongoDB credentials, such as `mongo_uri`, `db_name`, and `collection_name`, are 
 > However, since this project is intended as a **demonstration**, these technologies were **intentionally not implemented** to keep the pipeline simple and focused on core ETL concepts.  
 > They represent **natural next steps** for scaling this pipeline into a **production-ready system**.
 
+### Design Decisions
+
+- **Single collection:**  
+  All records are stored in a single MongoDB collection. This decision is based on MongoDB's efficiency in handling large volumes of data without needing multiple collections, unlike SQL databases. This approach keeps the architecture simple and facilitates aggregate queries across the entire dataset.
+
+- **Primary key (`_id` default):**  
+  Each document uses MongoDB's default `_id` as the primary key, ensuring uniqueness and simplifying insertion and update logic. There was no need for composite or artificial keys at this demonstration stage.
+
+- **Data retention / temporal window:**  
+  Data is kept within a fixed temporal window, suggested at 24 hours. This strategy prevents indefinite collection growth and ensures the demonstration remains lightweight and fast. More advanced retention or archival policies can be added in a future version.
+
+- **Indexes (future considerations):**  
+  Although not implemented at this stage, indexes on critical fields such as `icao24` and `origin_country` could be added to accelerate frequent queries and filters. The decision to skip indexes for now keeps the pipeline simple and suitable for test volumes.
+
+- **Scalability strategies (future considerations):**  
+  Strategies like sharding, temporal partitioning, or replication were not considered at this initial phase. They remain potential evolutions if the project scales to production, allowing higher database scalability and availability.
+
+- **Trade-offs:**  
+  Some decisions were made prioritizing **simplicity, learning, and demonstration of concept** over complex optimizations or advanced production practices. Each point above was carefully evaluated to balance **ease of use**, **clarity for the reader**, and **possible future evolutions**.
+
+
 ## Acknowledgements
 This project uses data from the OpenSky Network. We thank the OpenSky team for providing access to their ADS-B sensor network.
 

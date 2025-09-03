@@ -160,6 +160,7 @@ MongoDB credentials, such as `mongo_uri`, `db_name`, and `collection_name`, are 
 | true_track       | float     | True flight direction.                                      |
 | vertical_rate    | float     | Rate of ascent/descent (capped between -30 and +30).        |
 | geo_altitude     | float     | Geometric altitude (no negative values).                    |
+| spi              | bool      | Whether flight status indicates special purpose indicator.  |
 | position_source  | int       | Position source.                                            |
 | velocity_anomaly | bool      | True if the velocity is greater than 320 m/s.               |
 

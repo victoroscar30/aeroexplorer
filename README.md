@@ -97,7 +97,7 @@ graph TD
     F --> I(MongoDB);
     F --> H(CSV);
 ```
-##### Execution Map
+#### Execution Map
 1. **Orchestration:** The `pipeline.py` script is the entry point, scheduling a complete job to run every 30 seconds.
 
 2. **Extraction:** The job starts by collecting raw data (`fetch_data.py`) from the OpenSky API.
@@ -116,7 +116,7 @@ graph TD
 | `transform.py`     | `transform_flights()`                         | DataFrame from `fetch_data.py`  | Clean and formatted Pandas DataFrame  | pandas                                      | N/A (invoked internally)      | Cleans, validates, and enriches data. Handles nulls, removes unused columns, converts types. |
 | `load.py`          | `load_to_csv()`, `load_to_mongo()`           | DataFrame from `transform.py`   | CSV file (`data/processed/*.csv`) or MongoDB documents | pandas, pymongo                             | N/A (invoked internally)      | Saves processed data to CSV or MongoDB depending on the chosen method. |
 
-##### Configuration and Credentials
+#### Configuration and Credentials
 Credentials for OpenSky Network API access are stored in a `.env` file at the project root. The `auth_opensky.py` module uses the `dotenv` library to load these environment variables.
 
 **Required variables in `.env:`**
@@ -132,7 +132,7 @@ Credentials for OpenSky Network API access are stored in a `.env` file at the pr
 
 MongoDB credentials, such as `mongo_uri`, `db_name`, and `collection_name`, are configured with default values directly in the `load_to_mongo()` function.
 
-##### Data and Schemas
+#### Data and Schemas
 
 **Data Source:** OpenSky Network flight states API `/api/states/all`
 
@@ -165,7 +165,7 @@ MongoDB credentials, such as `mongo_uri`, `db_name`, and `collection_name`, are 
 
 **Removed Columns:** `category`, `sensors`, and `squawk` are dropped in the transformation step due to a lack of usable data.
 
-##### Quality, Validation, and Logs
+#### Quality, Validation, and Logs
 
 - **Validation Rules:**
   - Negative altitudes (`baro_altitude`, `geo_altitude`) are adjusted to `0`.
@@ -181,13 +181,13 @@ MongoDB credentials, such as `mongo_uri`, `db_name`, and `collection_name`, are 
   - **Extraction:** `fetch_data.py` uses `resp.raise_for_status()` for HTTP errors (401, 404, etc.).
   - **Loading:** `load_to_mongo()` uses `try...except BulkWriteError` with `ordered=False` to continue inserting even if some documents fail.
 
-##### Performance and Scalability
+#### Performance and Scalability
 
 - **Batch Processing:** Processes data in DataFrames, inserting multiple docs into MongoDB via `insert_many()`.  
 - **Token Management:** Cached and proactively renewed 60s before expiration.  
 - **Limitations:** Current scheduling (`schedule`) is lightweight and lacks retries, fault tolerance, or DAG visualization (better suited for Airflow, Prefect, or Dagster).
 
-##### Testing and Reproducibility
+#### Testing and Reproducibility
 
 - **Tests:** Basic via `if __name__ == "__main__"` in `fetch_data.py` and `pipeline.py`.  
 - **Dependencies:**
@@ -198,7 +198,7 @@ MongoDB credentials, such as `mongo_uri`, `db_name`, and `collection_name`, are 
   - `pymongo`
 - **Reproducibility:** Requires only the dependencies above and a properly configured `.env` file.
 
-##### End-to-End Execution
+#### End-to-End Execution
 
 1. Create a `.env` file at the project root and configure variables:
 
@@ -215,12 +215,12 @@ MongoDB credentials, such as `mongo_uri`, `db_name`, and `collection_name`, are 
 
 3. To stop execution, use Ctrl+C.
 
-##### Monitoring and Metrics
+#### Monitoring and Metrics
 
 - **Current:** Monitoring is limited to console messages showing execution status, number of saved records, and token renewal.  
 - **Future Improvements:** Integration with robust logging (e.g., Loguru) or metrics platforms (e.g., Prometheus) could provide better observability.
 
-##### Limitations and Future Improvements
+#### Limitations and Future Improvements
 
 - **Orchestration:** Replace `schedule` with a production-grade tool (e.g., Airflow, Prefect, Dagster).  
 - **Configuration:** Centralize settings (`mongo_uri`, `db_name`, etc.) in a dedicated file (`config.py` or `config.yaml`).  

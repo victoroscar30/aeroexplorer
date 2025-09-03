@@ -232,7 +232,7 @@ MongoDB credentials, such as `mongo_uri`, `db_name`, and `collection_name`, are 
 > Advanced monitoring, observability, and orchestration tools (e.g., Airflow, Prefect, Dagster, Prometheus) were considered during the design phase.  
 > However, since this project is intended as a **demonstration**, these technologies were **intentionally not implemented** to keep the pipeline simple and focused on core ETL concepts.  
 > They represent **natural next steps** for scaling this pipeline into a **production-ready system**.
-
+---
 ### Design Decisions
 
 - **Single collection:**  
@@ -252,7 +252,7 @@ MongoDB credentials, such as `mongo_uri`, `db_name`, and `collection_name`, are 
 
 - **Trade-offs:**  
   Some decisions were made prioritizing **simplicity, learning, and demonstration of concept** over complex optimizations or advanced production practices. Each point above was carefully evaluated to balance **ease of use**, **clarity for the reader**, and **possible future evolutions**.
-
+---
 
 ## Acknowledgements
 This project uses data from the OpenSky Network. We thank the OpenSky team for providing access to their ADS-B sensor network.

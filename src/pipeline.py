@@ -13,11 +13,10 @@ def job():
 
 if __name__ == "__main__":
     try:
-        schedule.every(30).seconds.do(job)  # executa a cada 30 segundos
-        # job()  # Executa imediatamente para teste
-        while True:
-            schedule.run_pending()
-            time.sleep(1)
+         schedule.every(30).seconds.do(job)  # executa a cada 30 segundos
+         # job()  # Executa imediatamente para teste
+         while True:
+             schedule.run_pending()
+             time.sleep(1)
     except KeyboardInterrupt:
-        print("\n Execução interrompida pelo usuário.")
-
+         print("\n Execução interrompida pelo usuário.")
